@@ -40,6 +40,11 @@ class TradingBot:
         )
 
     def run(self) -> None:
+        """
+        Runs the trading bot.
+        Executes the strategies and handle the signals.
+        """
+
         for strategy in self.strategies:
             strategy.initialize(self.config)
 
