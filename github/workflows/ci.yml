@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  pull_request:
+    branches: ["main"]
+
+  push:
+    branches: ["main"]
+
+jobs:
+  linter:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: |
+            poetry.lock
+
+      - name: Run pre-commit
+        uses: pre-commit/action@v2.0.3
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+
+      - name: Install dependencies
+        run: poetry install --no-root
+
+      - name: Run pytest
+        run: poetry run pytest
