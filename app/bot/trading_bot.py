@@ -3,8 +3,7 @@ from time import sleep
 
 from config import TradingBotConfig
 from enums import OrderType, TimeInForce
-from interfaces import CryptoExchangeProtocol, StrategyProtocol
-from market_data import MarketDataProtocol
+from interfaces import CryptoExchangeProtocol, MarketDataProtocol, StrategyProtocol
 from schemas import CreateOrderSchema, Signal
 
 
