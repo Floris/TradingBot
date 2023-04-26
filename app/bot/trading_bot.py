@@ -1,14 +1,10 @@
-from datetime import datetime
 from time import sleep
 
 from config import TradingBotConfig
 from enums import OrderType, TimeInForce
 from interfaces import CryptoExchangeProtocol, MarketDataProtocol, StrategyProtocol
 from schemas import CreateOrderSchema, Signal
-
-
-def timestamp_to_datetime(timestamp: int) -> str:
-    return datetime.fromtimestamp(timestamp / 1000).strftime("%Y-%m-%d %H:%M:%S")
+from utils.utils import timestamp_to_datetime
 
 
 class TradingBot:
