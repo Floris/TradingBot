@@ -1,6 +1,7 @@
 from collections.abc import Callable
 from time import sleep
 
+import pandas
 from config import MainConfig
 from interfaces import MarketDataProtocol
 from schemas import Signal
@@ -21,18 +22,28 @@ class SignalProcessor:
         self.market_data = market_data
         self.signal_handler = signal_handler
 
-    def handle_signal(self, signal: Signal) -> None:
-        print(signal.dict())
-        self.signal_handler(signal)
+    def _print_stats(self, df: pandas.DataFrame) -> None:
+        print("-" * 50)
+        print("Open Time: ", timestamp_to_datetime(df["open_time"].iloc[-1]))
+        print("Open: ", df["open"].iloc[-1])
+        print("Close: ", df["close"].iloc[-1])
+        print("High: ", df["high"].iloc[-1])
+        print("Low: ", df["low"].iloc[-1])
+        print("Volume: ", df["volume"].iloc[-1])
+        print("-" * 50)
 
-    def run_backtest(self) -> None:
+    def _handle_signals(self, signals: list[Signal]) -> None:
         """
-        Runs with historical data. Iterates through the historical data.
-        Executes the strategies and handle the signals based on historical data.
+        Handles the signals.
         """
-        self.signal_engine.initialize_strategies()
+        for signal in signals:
+            self.signal_handler(signal)
 
-        df = self.market_data.get_klines(
+    def _get_df(self) -> pandas.DataFrame:
+        """
+        Gets the klines from the market data.
+        """
+        return self.market_data.get_klines(
             symbol=self.config.symbol,
             interval=self.config.market_data_config.interval,
             limit=self.config.market_data_config.limit,
@@ -40,49 +51,19 @@ class SignalProcessor:
             end_time=self.config.market_data_config.end_time,
         )
 
-        for index in range(1, len(df)):
-            df_slice = df.iloc[:index]
-            signals = self.signal_engine.generate_signals(df_slice)
-
-            for signal in signals:
-                self.signal_handler(signal)
-
-            print("-" * 50)
-            print("Open Time: ", timestamp_to_datetime(df_slice["open_time"].iloc[-1]))
-            print("Open: ", df_slice["open"].iloc[-1])
-            print("Close: ", df_slice["close"].iloc[-1])
-            print("High: ", df_slice["high"].iloc[-1])
-            print("Low: ", df_slice["low"].iloc[-1])
-            print("Volume: ", df_slice["volume"].iloc[-1])
-            print("-" * 50)
-
-    def run(self) -> None:
-        """
-        Runs the Signal Processor.
-        Executes the strategies and handles the signals.
-        """
-
+    def run(self, backtest: bool | None = False) -> None:
         self.signal_engine.initialize_strategies()
 
+        if backtest:
+            df = self._get_df()
+            for index in range(1, len(df)):
+                df_slice = df.iloc[:index]
+                self._handle_signals(self.signal_engine.generate_signals(df_slice))
+                self._print_stats(df_slice)
+            return
+
         while True:
-            df = self.market_data.get_klines(
-                symbol=self.config.symbol,
-                interval=self.config.market_data_config.interval,
-                limit=self.config.market_data_config.limit,
-                start_time=self.config.market_data_config.start_time,
-                end_time=self.config.market_data_config.end_time,
-            )
-
-            signals = self.signal_engine.generate_signals(df)
-
-            for signal in signals:
-                self.handle_signal(signal)
-
-            print("-" * 50)
-            print("Open Time: ", timestamp_to_datetime(df["open_time"].iloc[-1]))
-            print("Open: ", df["open"].iloc[-1])
-            print("High: ", df["high"].iloc[-1])
-            print("Low: ", df["low"].iloc[-1])
-            print("Volume: ", df["volume"].iloc[-1])
-            print("-" * 50)
+            df = self._get_df()
+            self._handle_signals(self.signal_engine.generate_signals(df))
+            self._print_stats(df)
             sleep(self.config.polling_interval)

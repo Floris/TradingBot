@@ -37,10 +37,12 @@ initial_balance = Decimal(10000)
 balance = initial_balance
 trade_count = 0
 total_profit = Decimal(0)
+total_sell_signal_count = 0
+total_buy_signal_count = 0
 
 
 def backtest_logic(signal: Signal) -> None:
-    global balance, trade_count, total_profit
+    global balance, trade_count, total_profit, total_sell_signal_count, total_buy_signal_count
     print(signal.name)
     print(signal.reason)
     print(signal.action)
@@ -50,6 +52,8 @@ def backtest_logic(signal: Signal) -> None:
     print(signal.take_profit_price)
 
     if signal.action == OrderSide.BUY:
+        total_buy_signal_count = total_buy_signal_count + 1
+
         # Calculate the quantity to buy
         quantity = balance / signal.price
         # Update the portfolio
@@ -58,6 +62,8 @@ def backtest_logic(signal: Signal) -> None:
         balance -= quantity * signal.price
 
     elif signal.action == OrderSide.SELL and portfolio[signal.symbol] > 0:
+        total_sell_signal_count = total_sell_signal_count + 1
+
         # Calculate the sell value
         sell_value = portfolio[signal.symbol] * signal.price
         # Update the balance
@@ -82,12 +88,14 @@ def run_backtest() -> None:
         signal_engine=engine,
         config=config,
         market_data=BinanceMarketData(),
-        signal_handler=lambda signal: print(signal.dict()),
-    ).run_backtest()
+        signal_handler=backtest_logic,
+    ).run(backtest=True)
 
     print(f"Final balance: {balance}")
     print(f"Total profit: {total_profit}")
     print(f"Total trades: {trade_count}")
+    print(f"Total buy signals: {total_buy_signal_count}")
+    print(f"Total sell signals: {total_sell_signal_count}")
 
     if trade_count > 0 and total_profit:
         print(f"Profit per trade: {total_profit / trade_count}")
