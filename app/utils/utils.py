@@ -1,8 +1,9 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 def timestamp_to_datetime(timestamp: int) -> str:
-    return datetime.fromtimestamp(timestamp / 1000).strftime("%Y-%m-%d %H:%M:%S")
+    dt = datetime.fromtimestamp(timestamp / 1000, tz=timezone.utc)
+    return dt.strftime("%Y-%m-%d %H:%M:%S")
 
 
 def datetime_to_timestamp(value: datetime) -> int:
@@ -10,8 +11,4 @@ def datetime_to_timestamp(value: datetime) -> int:
 
 
 def y_m_d_to_datetime(value: str) -> datetime:
-    """
-    y_m_d string to datetime
-    """
-
-    return datetime.strptime(value, "%Y-%m-%d")
+    return datetime.strptime(value, "%Y-%m-%d").replace(tzinfo=timezone.utc)
