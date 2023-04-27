@@ -2,7 +2,7 @@ import time
 from decimal import Decimal
 
 import pandas
-from config import TradingBotConfig
+from config import MainConfig
 from enums import OrderSide
 from schemas import Signal
 from ta.momentum import rsi
@@ -11,7 +11,7 @@ from ta.momentum import rsi
 class SimpleRsiStrategy:
     def initialize(
         self,
-        config: TradingBotConfig,
+        config: MainConfig,
     ) -> None:
         """
         Initialize the Simple RSI Strategy with the given configuration.
