@@ -1,4 +1,3 @@
-import time
 from decimal import Decimal
 
 import pandas
@@ -18,8 +17,7 @@ class SimpleRsiStrategy:
         """
         self.config = config
         self.name = "Simple RSI Strategy"
-        self.last_signal_timestamp = {OrderSide.BUY: 0, OrderSide.SELL: 0}
-        self.min_interval_seconds = 300
+
         self.overbought: int = 70
         self.oversold: int = 30
         self.window: int = 14
@@ -70,15 +68,10 @@ class SimpleRsiStrategy:
         :return: A Signal object if a buy or sell signal is generated, None otherwise
         """
 
-        current_time = int(time.time())
         current_rsi = rsi(close=df["close"], window=self.window, fillna=False).iloc[-1]
         current_price = Decimal(df["close"].iloc[-1])
 
-        if (
-            current_rsi < self.oversold
-            and current_time - self.last_signal_timestamp[OrderSide.BUY]
-        ):
-            self.last_signal_timestamp[OrderSide.BUY] = current_time
+        if current_rsi < self.oversold:
             return self._create_signal(
                 action=OrderSide.BUY,
                 reason="RSI value is below the oversold threshold",
@@ -91,12 +84,7 @@ class SimpleRsiStrategy:
                 ),
             )
 
-        elif (
-            current_rsi > self.overbought
-            and current_time - self.last_signal_timestamp[OrderSide.SELL]
-            > self.min_interval_seconds
-        ):
-            self.last_signal_timestamp[OrderSide.SELL] = current_time
+        elif current_rsi > self.overbought:
             return self._create_signal(
                 action=OrderSide.SELL,
                 reason="RSI value is above the overbought threshold",

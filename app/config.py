@@ -15,6 +15,7 @@ class MarketDataConfig(BaseModel):
 class TradingConfig(BaseModel):
     starting_balance: Decimal  # starting balance
     notional: Decimal  # how much money to trade with
+    max_amount_open_positions: int = 1  # maximum number of open positions
     stop_loss_percentage: Decimal = Decimal("0.95")  # stop loss percentage
     take_profit_percentage: Decimal = Decimal("1.10")  # take profit percentage
 
@@ -22,7 +23,7 @@ class TradingConfig(BaseModel):
 class MainConfig(BaseModel):
     backtest: bool = False  # whether to run in backtest mode
     symbol: str  # symbol to trade
-    polling_interval: float  # how often to poll for new data
+    polling_interval_weight: float = 1
 
     market_data_config: MarketDataConfig  # market data config
     trading_config: TradingConfig  # trading config

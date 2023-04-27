@@ -1,3 +1,4 @@
+from decimal import Decimal
 from time import sleep
 
 import pandas
@@ -6,7 +7,7 @@ from interfaces import MarketDataProtocol
 from position_manager.position_manager import PositionManager
 from schemas import Signal
 from signals.signal_engine import SignalEngine
-from utils.utils import timestamp_to_datetime
+from utils.utils import interval_to_seconds, timestamp_to_datetime
 
 
 class SignalProcessor:
@@ -30,6 +31,7 @@ class SignalProcessor:
         self.config = config
         self.market_data = market_data
         self.position_manager = position_manager
+        self.last_price: Decimal = Decimal(0)
 
     def _print_stats(self, df: pandas.DataFrame) -> None:
         """
@@ -79,6 +81,8 @@ class SignalProcessor:
         Args:
             backtest (bool | None): A boolean indicating whether to run in backtest mode or not. Default is False.
                 If None, the function will not run in backtest mode and will run in standard mode.
+        Returns:
+            pandas.Series: A Series containing the last kline data.
 
         Backtest mode:
             With backtest mode enabled, the signal processor will loop through the klines returned by the market data.
@@ -90,16 +94,22 @@ class SignalProcessor:
         """
         self.signal_engine.initialize_strategies()
 
+        interval = self.config.polling_interval_weight * interval_to_seconds(
+            self.config.market_data_config.interval
+        )
+
         if self.config.backtest:
             df = self._get_df()
             for index in range(1, len(df)):
                 df_slice = df.iloc[:index]
                 self._handle_signals(self.signal_engine.generate_signals(df_slice))
                 self._print_stats(df_slice)
+
+            self.last_price = Decimal(df["close"].iloc[-1])
             return
 
         while True:
             df = self._get_df()
             self._handle_signals(self.signal_engine.generate_signals(df))
             self._print_stats(df)
-            sleep(self.config.polling_interval)
+            sleep(interval)

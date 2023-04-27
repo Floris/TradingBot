@@ -1,4 +1,3 @@
-import time
 from decimal import Decimal
 
 import pandas as pd
@@ -16,8 +15,7 @@ class MACDStrategy:
 
         self.config = config
         self.name = "MACD Strategy"
-        self.last_signal_timestamp = {OrderSide.BUY: 0, OrderSide.SELL: 0}
-        self.min_interval_seconds = 300  # Set a minimum interval (e.g., 5 minutes)
+
         self.n_fast: int = 12
         self.n_slow: int = 26
         self.n_sign: int = 9
@@ -55,8 +53,6 @@ class MACDStrategy:
         :return: A Signal object if a buy or sell signal is generated, None otherwise
         """
 
-        current_time = int(time.time())
-
         macd = MACD(
             close=df["close"],
             window_fast=self.n_fast,
@@ -78,26 +74,14 @@ class MACDStrategy:
 
         current_price = Decimal(df["close"].iloc[-1])
 
-        if (
-            current_macd > current_signal
-            and previous_macd <= previous_signal
-            and current_time - self.last_signal_timestamp[OrderSide.BUY]
-            > self.min_interval_seconds
-        ):
-            self.last_signal_timestamp[OrderSide.BUY] = current_time
+        if current_macd > current_signal and previous_macd <= previous_signal:
             return self._create_signal(
                 action=OrderSide.BUY,
                 reason="MACD line crossed above signal line",
                 current_price=current_price,
             )
 
-        elif (
-            current_macd < current_signal
-            and previous_macd >= previous_signal
-            and current_time - self.last_signal_timestamp[OrderSide.SELL]
-            > self.min_interval_seconds
-        ):
-            self.last_signal_timestamp[OrderSide.SELL] = current_time
+        elif current_macd < current_signal and previous_macd >= previous_signal:
             return self._create_signal(
                 action=OrderSide.SELL,
                 reason="MACD line crossed below signal line",

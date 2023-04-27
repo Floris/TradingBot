@@ -4,7 +4,7 @@ from typing import Protocol
 import pandas
 from config import MainConfig
 from enums import INTERVALS
-from schemas import CreateOrderSchema, Signal
+from schemas import CreateOrderSchema, OrderSchema, Signal
 
 
 class MarketDataProtocol(Protocol):
@@ -33,7 +33,7 @@ class MarketDataProtocol(Protocol):
 
 
 class CryptoExchangeProtocol(Protocol):
-    def create_order(self, payload: CreateOrderSchema) -> dict:
+    def create_order(self, payload: CreateOrderSchema) -> OrderSchema:
         """
         Creates a new order on the exchange.
 
