@@ -25,7 +25,7 @@ engine = SignalEngine(
 )
 
 
-def handle_signal(signal: Signal) -> None:
+def backtest_logic(signal: Signal) -> None:
     print(signal.name)
     print(signal.reason)
     print(signal.action)
@@ -33,13 +33,12 @@ def handle_signal(signal: Signal) -> None:
     print(signal.price)
     print(signal.stop_price)
     print(signal.take_profit_price)
-
     return
 
 
-TRADING_BOT = SignalProcessor(
+BACKTEST = SignalProcessor(
     signal_engine=engine,
     config=config,
     market_data=BinanceMarketData(),
-    signal_handler=handle_signal,
+    signal_handler=backtest_logic,
 )
