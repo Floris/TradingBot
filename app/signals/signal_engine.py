@@ -10,6 +10,13 @@ class SignalEngine:
         strategies: list[StrategyProtocol],
         config: MainConfig,
     ) -> None:
+        """
+        Constructor for the SignalEngine class.
+
+        Args:
+            strategies (list[StrategyProtocol]): A list of StrategyProtocol objects.
+            config (MainConfig): An instance of MainConfig class.
+        """
         self.strategies = strategies
         self.config = config
 
@@ -23,10 +30,11 @@ class SignalEngine:
         """
         Generates signals from the strategies.
 
-        args:
-            df: pandas.DataFrame
-        returns:
-            list[Signal]
+        Args:
+            df (pandas.DataFrame): A DataFrame containing klines data.
+
+        Returns:
+            list[Signal]: A list of Signal objects.
         """
 
         signals = []

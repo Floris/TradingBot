@@ -17,12 +17,27 @@ class SignalProcessor:
         market_data: MarketDataProtocol,
         signal_handler: Callable[[Signal], None],
     ) -> None:
+        """
+        Constructor for the SignalProcessor class.
+
+        Args:
+            signal_engine (SignalEngine): An instance of SignalEngine class.
+            config (MainConfig): An instance of MainConfig class.
+            market_data (MarketDataProtocol): An object implementing the MarketDataProtocol interface.
+            signal_handler (Callable[[Signal], None]): A callable object that takes a Signal object as input and returns nothing.
+        """
         self.signal_engine = signal_engine
         self.config = config
         self.market_data = market_data
         self.signal_handler = signal_handler
 
     def _print_stats(self, df: pandas.DataFrame) -> None:
+        """
+        Prints the statistics of the last kline in the given DataFrame.
+
+        Args:
+            df (pandas.DataFrame): A DataFrame containing klines data.
+        """
         print("-" * 50)
         print("Open Time: ", timestamp_to_datetime(df["open_time"].iloc[-1]))
         print("Open: ", df["open"].iloc[-1])
@@ -35,6 +50,9 @@ class SignalProcessor:
     def _handle_signals(self, signals: list[Signal]) -> None:
         """
         Handles the signals.
+
+        Args:
+            signals (list[Signal]): A list of Signal objects.
         """
         for signal in signals:
             self.signal_handler(signal)
@@ -42,6 +60,9 @@ class SignalProcessor:
     def _get_df(self) -> pandas.DataFrame:
         """
         Gets the klines from the market data.
+
+        Returns:
+            pandas.DataFrame: A DataFrame containing klines data.
         """
         return self.market_data.get_klines(
             symbol=self.config.symbol,
@@ -52,6 +73,21 @@ class SignalProcessor:
         )
 
     def run(self, backtest: bool | None = False) -> None:
+        """
+        Runs the SignalProcessor in either backtest or standard mode.
+
+        Args:
+            backtest (bool | None): A boolean indicating whether to run in backtest mode or not. Default is False.
+                If None, the function will not run in backtest mode and will run in standard mode.
+
+        Backtest mode:
+            With backtest mode enabled, the signal processor will loop through the klines returned by the market data.
+            This way, we can test our strategies on historical data.
+
+        Standard mode:
+            With backtest mode disabled, the signal processor will loop indefinitely, polling the market data for new klines.
+            This way, we can test our strategies on live data.
+        """
         self.signal_engine.initialize_strategies()
 
         if backtest:
