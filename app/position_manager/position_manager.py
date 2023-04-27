@@ -1,12 +1,21 @@
 from collections import defaultdict
 from decimal import Decimal
-from typing import Any
+from typing import TypedDict
 from uuid import uuid4
 
 from config import MainConfig
 from enums import OrderSide
 from position_manager.trade_executor import TradeExecutor
 from schemas import OrderSchema, Signal
+
+
+class Position(TypedDict):
+    symbol: str
+    entry_price: Decimal
+    stop_loss_price: Decimal
+    take_profit_price: Decimal
+    quantity: Decimal
+    order_id: str
 
 
 class PositionManager:
@@ -21,7 +30,7 @@ class PositionManager:
         self.config = config
         self.trade_executor = trade_executor
 
-        self.active_positions: dict[str, dict[str, Any]] = defaultdict(dict)
+        self.active_positions: dict[str, Position] = defaultdict()
         self.portfolio: dict[str, Decimal] = defaultdict(Decimal)
         self.balance = self.config.trading_config.starting_balance
 
@@ -57,7 +66,7 @@ class PositionManager:
         del self.active_positions[position_id]
 
     def _update_balance_and_portfolio(
-        self, position: dict[str, Any], sell_order: OrderSchema
+        self, position: Position, sell_order: OrderSchema
     ) -> None:
         """
         Updates the balance and the portfolio of the PositionManager.
@@ -78,19 +87,6 @@ class PositionManager:
         - A string representing a new UUID.
         """
         return str(uuid4())
-
-    def update_position(self, position_id: str, updated_values: dict) -> None:
-        """
-        Updates an active position.
-
-        Args:
-        - position_id: str, the ID of the position to be updated.
-        - updated_values: dict, the updated values to be set on the position.
-        """
-        if position_id not in self.active_positions:
-            return
-
-        self.active_positions[position_id].update(updated_values)
 
     def _manage_counters(self, signal: Signal) -> None:
         """
