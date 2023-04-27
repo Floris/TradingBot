@@ -20,6 +20,7 @@ class TradingConfig(BaseModel):
 
 
 class MainConfig(BaseModel):
+    backtest: bool = False  # whether to run in backtest mode
     symbol: str  # symbol to trade
     polling_interval: float  # how often to poll for new data
 

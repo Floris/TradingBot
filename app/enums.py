@@ -17,9 +17,9 @@ class OrderType(StrEnum):
 
 
 class TimeInForce(StrEnum):
-    GTC = "GTC"
-    IOC = "IOC"
-    FOK = "FOK"
+    GTC = "GTC"  # Good till Cancelled
+    IOC = "IOC"  # Immediate or Cancel
+    FOK = "FOK"  # Fill or Kill
 
 
 INTERVALS = Literal[

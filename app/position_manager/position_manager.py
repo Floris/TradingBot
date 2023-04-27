@@ -4,13 +4,17 @@ from typing import Any
 from uuid import uuid4
 
 from config import MainConfig
-from enums import OrderSide
-from schemas import Signal
+from enums import OrderSide, OrderType, TimeInForce
+from interfaces import CryptoExchangeProtocol
+from schemas import CreateOrderSchema, Signal
 
 
 class PositionManager:
-    def __init__(self, config: MainConfig):
+    def __init__(
+        self, config: MainConfig, crypto_exchange: CryptoExchangeProtocol | None
+    ):
         self.config = config
+        self.crypto_exchange = crypto_exchange
         self.active_positions: dict[str, dict[str, Any]] = defaultdict(dict)
         self.portfolio: dict[str, Decimal] = defaultdict(Decimal)
         self.balance = self.config.trading_config.starting_balance
@@ -18,6 +22,35 @@ class PositionManager:
         self.total_profit = Decimal("0")
         self.total_sell_signal_count = 0
         self.total_buy_signal_count = 0
+
+    def _submit_order(
+        self,
+        symbol: str,
+        side: OrderSide,
+        order_type: OrderType,
+        time_in_force: TimeInForce,
+        quantity: Decimal | None,
+        price: Decimal | None,
+        client_order_id: str | None,
+        stop_price: Decimal | None,
+        trailing_delta: Decimal | None,
+    ) -> None:
+        if self.config.backtest or self.crypto_exchange is None:
+            return
+
+        payload = CreateOrderSchema(
+            symbol=symbol,
+            side=side,
+            type=order_type,
+            time_in_force=time_in_force,
+            quantity=quantity,
+            price=price,
+            client_order_id=client_order_id,
+            stop_price=stop_price,
+            trailing_delta=trailing_delta,
+        )
+
+        self.crypto_exchange.create_order(payload)
 
     def generate_position_id(self) -> str:
         return str(uuid4())
@@ -61,6 +94,18 @@ class PositionManager:
                 "quantity": quantity,
             }
 
+            self._submit_order(
+                symbol=signal.symbol,
+                side=OrderSide.BUY,
+                order_type=OrderType.LIMIT,
+                time_in_force=TimeInForce.IOC,
+                quantity=quantity,
+                price=signal.price,
+                client_order_id=None,
+                stop_price=None,
+                trailing_delta=None,
+            )
+
         elif signal.action == OrderSide.SELL and self.portfolio[signal.symbol] > 0:
             self.trade_count += 1
             self.total_sell_signal_count = self.total_sell_signal_count + 1
@@ -83,6 +128,18 @@ class PositionManager:
             profit = sell_value - notional
             self.total_profit += profit
             print(f"Profit for this trade: {profit}")
+
+            self._submit_order(
+                symbol=signal.symbol,
+                side=OrderSide.SELL,
+                order_type=OrderType.MARKET,
+                time_in_force=TimeInForce.GTC,
+                quantity=self.portfolio[signal.symbol],
+                price=signal.price,
+                client_order_id=None,
+                stop_price=None,
+                trailing_delta=None,
+            )
 
         print(f"Current balance: {self.balance}")
         print(f"Total profit: {self.total_profit}")

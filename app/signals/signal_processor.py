@@ -72,7 +72,7 @@ class SignalProcessor:
             end_time=self.config.market_data_config.end_time,
         )
 
-    def run(self, backtest: bool | None = False) -> None:
+    def run(self) -> None:
         """
         Runs the SignalProcessor in either backtest or standard mode.
 
@@ -90,7 +90,7 @@ class SignalProcessor:
         """
         self.signal_engine.initialize_strategies()
 
-        if backtest:
+        if self.config.backtest:
             df = self._get_df()
             for index in range(1, len(df)):
                 df_slice = df.iloc[:index]

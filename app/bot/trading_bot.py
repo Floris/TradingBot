@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+from binance_exchange.exchange import BinanceExchange
 from binance_exchange.market_data import BinanceMarketData
 from config import MainConfig, MarketDataConfig, TradingConfig
 from position_manager.position_manager import PositionManager
@@ -10,6 +11,7 @@ from strategies.rsi_strategy import SimpleRsiStrategy
 from utils.utils import y_m_d_to_datetime
 
 config = MainConfig(
+    backtest=True,
     symbol="BTCUSDT",
     polling_interval=0.5,
     market_data_config=MarketDataConfig(
@@ -31,7 +33,7 @@ engine = SignalEngine(
     config=config,
 )
 
-position_manager = PositionManager(config=config)
+position_manager = PositionManager(config=config, crypto_exchange=BinanceExchange())
 
 
 TRADING_BOT = SignalProcessor(
