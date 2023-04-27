@@ -11,6 +11,13 @@ class TradeExecutor:
     def __init__(
         self, config: MainConfig, crypto_exchange: CryptoExchangeProtocol | None
     ):
+        """
+        Initializes a new TradeExecutor instance.
+
+        Args:
+        - config: MainConfig instance, containing the main configuration.
+        - crypto_exchange: CryptoExchangeProtocol instance, the crypto exchange to use.
+        """
         self.config = config
         self.crypto_exchange = crypto_exchange
 
@@ -23,7 +30,20 @@ class TradeExecutor:
         stop_price: Decimal | None = None,
         trailing_delta: Decimal | None = None,
     ) -> OrderSchema:
+        """
+        Submits an order to the crypto exchange.
 
+        Args:
+        - symbol: str, the symbol to trade.
+        - side: OrderSide instance, the order side.
+        - quantity: Decimal, the order quantity.
+        - price: Decimal, the order price.
+        - stop_price: Decimal or None, the stop price for the order.
+        - trailing_delta: Decimal or None, the trailing delta for the order.
+
+        Returns:
+        - An OrderSchema instance representing the executed order.
+        """
         client_order_id = str(uuid4())
         payload = CreateOrderSchema(
             symbol=symbol,
