@@ -1,6 +1,7 @@
 from collections import defaultdict
 from decimal import Decimal
 from typing import Any
+from uuid import uuid4
 
 from config import MainConfig
 from enums import OrderSide
@@ -17,6 +18,13 @@ class PositionManager:
         self.total_profit = Decimal("0")
         self.total_sell_signal_count = 0
         self.total_buy_signal_count = 0
+
+    def generate_position_id(self) -> str:
+        return str(uuid4())
+
+    def update_position(self, position_id: str, updated_values: dict) -> None:
+        if position_id in self.active_positions:
+            self.active_positions[position_id].update(updated_values)
 
     def handle_signal(self, signal: Signal) -> None:
 
@@ -44,7 +52,9 @@ class PositionManager:
             self.balance -= notional
 
             # Add the position to active_positions
-            self.active_positions[signal.symbol] = {
+            position_id = self.generate_position_id()
+            self.active_positions[position_id] = {
+                "symbol": signal.symbol,
                 "entry_price": signal.price,
                 "stop_loss_price": signal.stop_price,
                 "take_profit_price": signal.take_profit_price,
@@ -65,7 +75,9 @@ class PositionManager:
             self.portfolio[signal.symbol] = Decimal(0)
 
             # Remove the position from active_positions
-            del self.active_positions[signal.symbol]
+            for position_id in list(self.active_positions):
+                if self.active_positions[position_id]["symbol"] == signal.symbol:
+                    del self.active_positions[position_id]
 
             # Calculate the profit for this trade
             profit = sell_value - notional
@@ -79,10 +91,10 @@ class PositionManager:
     def print_stats(self) -> None:
         # Calculate the final portfolio value
         final_portfolio_value = Decimal(0)
-        for symbol, position in self.active_positions.items():
+        for position in self.active_positions.values():
             final_portfolio_value += position["quantity"] * position["entry_price"]
 
-        print(f"Open positions Value: {final_portfolio_value}")
+        print(f"Open positions Value: {round(final_portfolio_value,2)}")
         print(f"Final balance: {self.balance}")
         print(f"Total profit: {self.total_profit}")
         print(f"Total trades: {self.trade_count}")
