@@ -24,15 +24,13 @@ config = MainConfig(
     trading_config=TradingConfig(
         starting_balance=Decimal("10000"),
         notional=Decimal("100"),
-        max_amount_open_positions=6,
-        stop_loss_percentage=Decimal("0.95"),
-        take_profit_percentage=Decimal("1.10"),
+        max_amount_open_positions=10,
     ),
 )
 
 engine = SignalEngine(
-    strategies=[SimpleRsiStrategy(), MACDStrategy()],
     config=config,
+    strategies=[SimpleRsiStrategy(), MACDStrategy()],
 )
 
 position_manager = PositionManager(
@@ -42,8 +40,8 @@ position_manager = PositionManager(
 
 
 TRADING_BOT = SignalProcessor(
-    signal_engine=engine,
     config=config,
+    signal_engine=engine,
     market_data=BinanceMarketData(),
     position_manager=position_manager,
 )

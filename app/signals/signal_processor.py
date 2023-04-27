@@ -13,8 +13,8 @@ from utils.utils import interval_to_seconds, timestamp_to_datetime
 class SignalProcessor:
     def __init__(
         self,
-        signal_engine: SignalEngine,
         config: MainConfig,
+        signal_engine: SignalEngine,
         market_data: MarketDataProtocol,
         position_manager: PositionManager,
     ) -> None:
@@ -22,13 +22,13 @@ class SignalProcessor:
         Constructor for the SignalProcessor class.
 
         Args:
-            signal_engine (SignalEngine): An instance of SignalEngine class.
             config (MainConfig): An instance of MainConfig class.
+            signal_engine (SignalEngine): An instance of SignalEngine class.
             market_data (MarketDataProtocol): An object implementing the MarketDataProtocol interface.
             position_manager (PositionManager): An object implementing the PositionManager
         """
-        self.signal_engine = signal_engine
         self.config = config
+        self.signal_engine = signal_engine
         self.market_data = market_data
         self.position_manager = position_manager
         self.last_price: Decimal = Decimal(0)

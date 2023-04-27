@@ -16,8 +16,8 @@ class TradingConfig(BaseModel):
     starting_balance: Decimal  # starting balance
     notional: Decimal  # how much money to trade with
     max_amount_open_positions: int = 1  # maximum number of open positions
-    stop_loss_percentage: Decimal = Decimal("0.95")  # stop loss percentage
-    take_profit_percentage: Decimal = Decimal("1.10")  # take profit percentage
+    stop_loss_percentage: Decimal | None = None  # stop loss percentage
+    take_profit_percentage: Decimal | None = None  # take profit percentage
 
 
 class MainConfig(BaseModel):
