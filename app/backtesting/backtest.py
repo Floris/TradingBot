@@ -51,15 +51,17 @@ def backtest_logic(signal: Signal) -> None:
     print(signal.stop_price)
     print(signal.take_profit_price)
 
+    notional = config.trading_config.notional
+
     if signal.action == OrderSide.BUY:
         total_buy_signal_count = total_buy_signal_count + 1
 
         # Calculate the quantity to buy
-        quantity = balance / signal.price
+        quantity = notional / signal.price
         # Update the portfolio
         portfolio[signal.symbol] += quantity
         # Update the balance
-        balance -= quantity * signal.price
+        balance -= notional
 
     elif signal.action == OrderSide.SELL and portfolio[signal.symbol] > 0:
         total_sell_signal_count = total_sell_signal_count + 1
@@ -72,7 +74,7 @@ def backtest_logic(signal: Signal) -> None:
         portfolio[signal.symbol] = Decimal(0)
 
         # Calculate the profit for this trade
-        profit = sell_value - (initial_balance / trade_count)
+        profit = sell_value - notional
         total_profit += profit
         print(f"Profit for this trade: {profit}")
 
@@ -83,14 +85,31 @@ def backtest_logic(signal: Signal) -> None:
     return
 
 
+def calculate_portfolio_value(
+    portfolio: dict[str, Decimal], current_price: Decimal
+) -> Decimal:
+    portfolio_value = Decimal(0)
+    for symbol, quantity in portfolio.items():
+        portfolio_value += quantity * current_price
+    return portfolio_value
+
+
 def run_backtest() -> None:
-    SignalProcessor(
+    signal_processor = SignalProcessor(
         signal_engine=engine,
         config=config,
         market_data=BinanceMarketData(),
         signal_handler=backtest_logic,
-    ).run(backtest=True)
+    )
+    signal_processor.run(backtest=True)
 
+    df = signal_processor._get_df()
+    last_known_price = Decimal(df["close"].iloc[-1])
+    final_portfolio_value = round(
+        calculate_portfolio_value(portfolio, last_known_price), 2
+    )
+
+    print(f"Open positions Value: {final_portfolio_value}")
     print(f"Final balance: {balance}")
     print(f"Total profit: {total_profit}")
     print(f"Total trades: {trade_count}")
