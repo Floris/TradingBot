@@ -18,7 +18,7 @@ class TradingConfig(BaseModel):
     take_profit_percentage: Decimal = Decimal("1.10")  # take profit percentage
 
 
-class TradingBotConfig(BaseModel):
+class MainConfig(BaseModel):
     symbol: str  # symbol to trade
     polling_interval: float  # how often to poll for new data
 

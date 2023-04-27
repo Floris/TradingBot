@@ -2,14 +2,14 @@ import time
 from decimal import Decimal
 
 import pandas as pd
-from config import TradingBotConfig
+from config import MainConfig
 from enums import OrderSide
 from schemas import Signal
 from ta.trend import MACD
 
 
 class MACDStrategy:
-    def initialize(self, config: TradingBotConfig) -> None:
+    def initialize(self, config: MainConfig) -> None:
         """
         Initialize the MACD Strategy with the given configuration.
         """

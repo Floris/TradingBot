@@ -1,3 +1,5 @@
+import json
+import os
 from datetime import datetime
 
 import pandas
@@ -42,6 +44,9 @@ class BinanceMarketData:
             limit=limit,
         )
 
+        with open(f"{os.getcwd()}/app/mock_data/raw_klines.json", "w") as f:
+            f.write(json.dumps(klines))
+
         df = pandas.DataFrame(
             klines,
             columns=BINANCE_KLINE_COLUMNS,
@@ -60,5 +65,8 @@ class BinanceMarketData:
                 "taker_buy_quote_asset_volume": float,
             }
         )
+
+        with open(f"{os.getcwd()}/app/mock_data/parsed_klines.json", "w") as f:
+            f.write(json.dumps(klines))
 
         return dropna(df)

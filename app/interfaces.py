@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Protocol
 
 import pandas
-from config import TradingBotConfig
+from config import MainConfig
 from enums import INTERVALS
 from schemas import CreateOrderSchema, Signal
 
@@ -40,7 +40,7 @@ class CryptoExchangeProtocol(Protocol):
 class StrategyProtocol(Protocol):
     def initialize(
         self,
-        config: TradingBotConfig,
+        config: MainConfig,
     ) -> None:
         ...
 
