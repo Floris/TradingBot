@@ -1,11 +1,10 @@
-import json
-import os
 from datetime import datetime
 
 import pandas
 from binance import spot
 from enums import INTERVALS
 from ta.utils import dropna
+from utils.utils import datetime_to_timestamp
 
 from settings import settings
 
@@ -36,16 +35,22 @@ class BinanceMarketData:
         start_time: datetime | None = None,
         end_time: datetime | None = None,
     ) -> pandas.DataFrame:
+
+        binance_start_time = None
+        if start_time:
+            binance_start_time = datetime_to_timestamp(start_time)
+
+        binance_end_time = None
+        if end_time:
+            binance_end_time = datetime_to_timestamp(end_time)
+
         klines = client.klines(
             symbol=symbol,
             interval=interval,
-            startTime=start_time,
-            endTime=end_time,
+            startTime=binance_start_time,
+            endTime=binance_end_time,
             limit=limit,
         )
-
-        with open(f"{os.getcwd()}/app/mock_data/raw_klines.json", "w") as f:
-            f.write(json.dumps(klines))
 
         df = pandas.DataFrame(
             klines,
@@ -65,8 +70,5 @@ class BinanceMarketData:
                 "taker_buy_quote_asset_volume": float,
             }
         )
-
-        with open(f"{os.getcwd()}/app/mock_data/parsed_klines.json", "w") as f:
-            f.write(json.dumps(klines))
 
         return dropna(df)

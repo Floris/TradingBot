@@ -25,6 +25,37 @@ class SignalProcessor:
         print(signal.dict())
         self.signal_handler(signal)
 
+    def run_backtest(self) -> None:
+        """
+        Runs with historical data. Iterates through the historical data.
+        Executes the strategies and handle the signals based on historical data.
+        """
+        self.signal_engine.initialize_strategies()
+
+        df = self.market_data.get_klines(
+            symbol=self.config.symbol,
+            interval=self.config.market_data_config.interval,
+            limit=self.config.market_data_config.limit,
+            start_time=self.config.market_data_config.start_time,
+            end_time=self.config.market_data_config.end_time,
+        )
+
+        for index in range(1, len(df)):
+            df_slice = df.iloc[:index]
+            signals = self.signal_engine.generate_signals(df_slice)
+
+            for signal in signals:
+                self.signal_handler(signal)
+
+            print("-" * 50)
+            print("Open Time: ", timestamp_to_datetime(df_slice["open_time"].iloc[-1]))
+            print("Open: ", df_slice["open"].iloc[-1])
+            print("Close: ", df_slice["close"].iloc[-1])
+            print("High: ", df_slice["high"].iloc[-1])
+            print("Low: ", df_slice["low"].iloc[-1])
+            print("Volume: ", df_slice["volume"].iloc[-1])
+            print("-" * 50)
+
     def run(self) -> None:
         """
         Runs the Signal Processor.

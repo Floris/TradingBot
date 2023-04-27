@@ -66,6 +66,9 @@ class MACDStrategy:
         )
 
         macd_line = macd.macd()
+        if len(macd_line) < 2:
+            return None
+
         signal_line = macd.macd_signal()
 
         current_macd = macd_line.iloc[-1]
