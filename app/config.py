@@ -13,6 +13,7 @@ class MarketDataConfig(BaseModel):
 
 
 class TradingConfig(BaseModel):
+    starting_balance: Decimal  # starting balance
     notional: Decimal  # how much money to trade with
     stop_loss_percentage: Decimal = Decimal("0.95")  # stop loss percentage
     take_profit_percentage: Decimal = Decimal("1.10")  # take profit percentage

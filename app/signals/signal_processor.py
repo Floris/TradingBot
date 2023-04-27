@@ -1,9 +1,9 @@
-from collections.abc import Callable
 from time import sleep
 
 import pandas
 from config import MainConfig
 from interfaces import MarketDataProtocol
+from position_manager.position_manager import PositionManager
 from schemas import Signal
 from signals.signal_engine import SignalEngine
 from utils.utils import timestamp_to_datetime
@@ -15,7 +15,7 @@ class SignalProcessor:
         signal_engine: SignalEngine,
         config: MainConfig,
         market_data: MarketDataProtocol,
-        signal_handler: Callable[[Signal], None],
+        position_manager: PositionManager,
     ) -> None:
         """
         Constructor for the SignalProcessor class.
@@ -24,12 +24,12 @@ class SignalProcessor:
             signal_engine (SignalEngine): An instance of SignalEngine class.
             config (MainConfig): An instance of MainConfig class.
             market_data (MarketDataProtocol): An object implementing the MarketDataProtocol interface.
-            signal_handler (Callable[[Signal], None]): A callable object that takes a Signal object as input and returns nothing.
+            position_manager (PositionManager): An object implementing the PositionManager
         """
         self.signal_engine = signal_engine
         self.config = config
         self.market_data = market_data
-        self.signal_handler = signal_handler
+        self.position_manager = position_manager
 
     def _print_stats(self, df: pandas.DataFrame) -> None:
         """
@@ -55,7 +55,7 @@ class SignalProcessor:
             signals (list[Signal]): A list of Signal objects.
         """
         for signal in signals:
-            self.signal_handler(signal)
+            self.position_manager.handle_signal(signal)
 
     def _get_df(self) -> pandas.DataFrame:
         """
