@@ -101,7 +101,7 @@ class SignalProcessor:
         if self.config.backtest:
             df = self._get_df()
             for index in range(1, len(df)):
-                df_slice = df.iloc[:index]
+                df_slice = df.iloc[: index + 1]
                 self._handle_signals(self.signal_engine.generate_signals(df_slice))
                 self._print_stats(df_slice)
 

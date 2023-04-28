@@ -41,7 +41,7 @@ class MockStrategy(StrategyProtocol):
         pass
 
     def analyze(self, df: pd.DataFrame) -> Signal | None:
-        if df.iloc[-1]["close"] > 10000:
+        if df["close"].iloc[-1] > 10000:
             return Signal(
                 name="mock_strategy",
                 reason="price_above_10000",
