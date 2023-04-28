@@ -1,21 +1,21 @@
 from collections import defaultdict
 from decimal import Decimal
-from typing import TypedDict
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from config.config import MainConfig
 from enums import OrderSide
 from position_manager.trade_executor import TradeExecutor
+from pydantic import BaseModel
 from schemas import OrderSchema, Signal
 
 
-class Position(TypedDict):
+class Position(BaseModel):
     symbol: str
     entry_price: Decimal
-    stop_loss_price: Decimal
-    take_profit_price: Decimal
     quantity: Decimal
-    order_id: str
+    order_id: str | UUID | int
+    stop_loss_price: Decimal | None = None
+    take_profit_price: Decimal | None = None
 
 
 class PositionManager:
@@ -30,14 +30,9 @@ class PositionManager:
         self.config = config
         self.trade_executor = trade_executor
 
-        self.active_positions: dict[str, Position] = defaultdict()
+        self.positions: dict[str, Position] = defaultdict()
         self.portfolio: dict[str, Decimal] = defaultdict(Decimal)
         self.balance = self.config.trading_config.starting_balance
-
-        self.total_sell_signal_count: int = 0
-        self.total_sell_orders_count: int = 0
-        self.total_buy_signal_count: int = 0
-        self.total_buy_orders_count: int = 0
 
         self.open_positions: int = 0
 
@@ -49,21 +44,21 @@ class PositionManager:
         - position_id: str, the ID of the position to be closed.
         - signal: Signal instance, the signal that triggered the closing of the position.
         """
-        if position_id not in self.active_positions:
+        if position_id not in self.positions:
             return
 
-        position = self.active_positions[position_id]
+        position = self.positions[position_id]
 
         sell_order = self.trade_executor.submit_order(
-            symbol=position["symbol"],
+            symbol=position.symbol,
             side=OrderSide.SELL,
-            quantity=position["quantity"],
+            quantity=position.quantity,
             price=signal.price,
         )
 
         self._update_balance_and_portfolio(position, sell_order)
         self.open_positions -= 1
-        del self.active_positions[position_id]
+        del self.positions[position_id]
 
     def _update_balance_and_portfolio(
         self, position: Position, sell_order: OrderSchema
@@ -77,7 +72,7 @@ class PositionManager:
         """
         sell_value = sell_order.executed_qty * sell_order.price
         self.balance += sell_value
-        self.portfolio[position["symbol"]] -= position["quantity"]
+        self.portfolio[position.symbol] -= position.quantity
 
     def generate_position_id(self) -> str:
         """
@@ -88,19 +83,6 @@ class PositionManager:
         """
         return str(uuid4())
 
-    def _manage_counters(self, signal: Signal) -> None:
-        """
-        Manages the counters for the PositionManager.
-
-        Args:
-        - signal: Signal instance, the signal that triggered the counter update.
-        """
-        if signal.action == OrderSide.BUY:
-            self.total_buy_signal_count += 1
-            return
-
-        self.total_sell_signal_count += 1
-
     def handle_signal(self, signal: Signal) -> None:
         """
         Handles a new signal.
@@ -108,7 +90,6 @@ class PositionManager:
         Args:
         - signal: Signal instance, the signal to be handled.
         """
-        self._manage_counters(signal)
 
         notional = self.config.trading_config.notional
 
@@ -127,10 +108,11 @@ class PositionManager:
         - signal: Signal instance, the buy signal to be handled.
         - notional: Decimal, the notional value for the trade.
         """
-        if self.open_positions > self.config.trading_config.max_amount_open_positions:
+        if (
+            self.open_positions >= self.config.trading_config.max_amount_open_positions
+            or notional > self.balance
+        ):
             return
-
-        self.open_positions += 1
 
         # Calculate the quantity to buy
         quantity = notional / signal.price
@@ -149,16 +131,16 @@ class PositionManager:
         self.balance -= notional
 
         # Add the position to active_positions
-        self.active_positions[self.generate_position_id()] = {
-            "symbol": signal.symbol,
-            "entry_price": signal.price,
-            "stop_loss_price": signal.stop_price,
-            "take_profit_price": signal.take_profit_price,
-            "quantity": quantity,
-            "order_id": buy_order.order_id,
-        }
+        self.positions[self.generate_position_id()] = Position(
+            symbol=signal.symbol,
+            entry_price=signal.price,
+            stop_loss_price=signal.stop_price,
+            take_profit_price=signal.take_profit_price,
+            quantity=quantity,
+            order_id=buy_order.order_id,
+        )
 
-        self.total_buy_orders_count += 1
+        self.open_positions += 1
 
     def _handle_sell_signal(self, signal: Signal) -> None:
         """
@@ -167,19 +149,12 @@ class PositionManager:
         Args:
         - signal: Signal instance, the sell signal to be handled.
         """
-        if len(self.active_positions.keys()) == 0:
+        if len(self.positions.keys()) == 0:
             return
 
-        positions_for_symbol = [
-            (position_id, position_data)
-            for position_id, position_data in self.active_positions.items()
-            if position_data["symbol"] == signal.symbol
-        ]
-
-        if positions_for_symbol:
+        if positions_for_symbol := list(self.positions.items()):
             oldest_position_id, _ = positions_for_symbol[0]
             self._close_position(position_id=oldest_position_id, signal=signal)
-            self.total_sell_orders_count += 1
 
     def print_stats(
         self,
@@ -192,14 +167,14 @@ class PositionManager:
         - close_price: Decimal, the closing price of the asset.
         """
         final_portfolio_value = sum(
-            position["quantity"] * close_price
-            for position in self.active_positions.values()
+            position.quantity * close_price for position in self.positions.values()
         )
         balance_plus_portfolio_value = self.balance + final_portfolio_value
         total_profit = (
             balance_plus_portfolio_value - self.config.trading_config.starting_balance
         )
 
+        print("PositionManager stats:")
         print(f"Sum open positions Value: {round(final_portfolio_value,2)}")
         print(f"Open positions count: {self.open_positions}")
 
@@ -210,8 +185,4 @@ class PositionManager:
 
         print(f"Total profit: {round(total_profit,2)}")
 
-        print(f"Total buy signals: {self.total_buy_signal_count}")
-        print(f"Total executed buy orders: {self.total_buy_orders_count}")
-
-        print(f"Total sell signals: {self.total_sell_signal_count}")
-        print(f"Total executed sell orders: {self.total_sell_orders_count}")
+        self.trade_executor.print_stats()

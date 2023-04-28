@@ -105,7 +105,7 @@ class SignalProcessor:
                 self._handle_signals(self.signal_engine.generate_signals(df_slice))
                 self._print_stats(df_slice)
 
-            self.last_price = Decimal(df["close"].iloc[-1])
+            self.last_price = Decimal(float(df["close"].iloc[-1]))
             return
 
         while True:
