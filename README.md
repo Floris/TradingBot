@@ -54,4 +54,4 @@ trading_bot.run()
 
 ## Configuring API keys
 
-Create a settings.py file in the `settings` folder. Copy the variables from `example_settings.py`.
+Create a `settings.py` file in the `settings` folder. Copy the variables from `example_settings.py`.
