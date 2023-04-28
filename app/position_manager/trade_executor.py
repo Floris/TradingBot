@@ -1,3 +1,4 @@
+from collections import defaultdict
 from decimal import Decimal
 from uuid import uuid4
 
@@ -20,6 +21,17 @@ class TradeExecutor:
         """
         self.config = config
         self.crypto_exchange = crypto_exchange
+        self.orders: dict[str, OrderSchema] = defaultdict()
+
+    def print_stats(
+        self,
+    ) -> None:
+        """
+        Prints the statistics for the TradeExecutor.
+        """
+
+        print("TradeExecutor stats:")
+        print(f"Total orders: {len(self.orders)}")
 
     def submit_order(
         self,
@@ -59,7 +71,7 @@ class TradeExecutor:
 
         # Return fake order if backtesting or crypto_exchange is None
         if self.config.backtest or self.crypto_exchange is None:
-            return OrderSchema(
+            order = OrderSchema(
                 order_id=str(uuid4()),
                 client_order_id=payload.client_order_id,
                 symbol=payload.symbol,
@@ -71,6 +83,10 @@ class TradeExecutor:
                 price=payload.price,
                 stop_price=payload.stop_price,
             )
+            self.orders[str(order.order_id)] = order
+            return order
 
         # Assumes order is filled immediately
-        return self.crypto_exchange.create_order(payload)
+        order = self.crypto_exchange.create_order(payload)
+        self.orders[str(order.order_id)] = order
+        return order
