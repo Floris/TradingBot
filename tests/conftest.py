@@ -9,11 +9,14 @@ from app.position_manager.position_manager import PositionManager
 from app.position_manager.trade_executor import TradeExecutor
 from app.schemas import OrderSide, Signal
 from app.signals.signal_engine import SignalEngine
+from app.signals.signal_processor import SignalProcessor
+from tests.mocked_data import MockMarketData
 
 
 @pytest.fixture()
 def trading_bot_config() -> MainConfig:
     return MainConfig(
+        backtest=True,
         symbol="BTCUSDT",
         polling_interval_weight=0.5,
         market_data_config=MarketDataConfig(interval="15m", limit=1000),
@@ -55,3 +58,14 @@ class MockStrategy(StrategyProtocol):
 def signal_engine(trading_bot_config: MainConfig) -> SignalEngine:
     strategies = [MockStrategy()]
     return SignalEngine(config=trading_bot_config, strategies=strategies)
+
+
+@pytest.fixture
+def signal_processor(
+    trading_bot_config: MainConfig, position_manager: PositionManager
+) -> SignalProcessor:
+    signal_engine = SignalEngine(config=trading_bot_config, strategies=[MockStrategy()])
+    market_data = MockMarketData(trading_bot_config)
+    return SignalProcessor(
+        trading_bot_config, signal_engine, market_data, position_manager
+    )
