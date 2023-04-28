@@ -108,11 +108,10 @@ class PositionManager:
         - signal: Signal instance, the buy signal to be handled.
         - notional: Decimal, the notional value for the trade.
         """
-        if self.open_positions > self.config.trading_config.max_amount_open_positions:
-            return
-
-        if notional > self.balance:
-            print("Insufficient balance for the buy signal.")
+        if (
+            self.open_positions >= self.config.trading_config.max_amount_open_positions
+            or notional > self.balance
+        ):
             return
 
         # Calculate the quantity to buy
