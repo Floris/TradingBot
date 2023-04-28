@@ -1,7 +1,7 @@
 from decimal import Decimal
 
 import pandas
-from config import MainConfig
+from config.config import MainConfig
 from enums import OrderSide
 from schemas import Signal
 from ta.momentum import rsi

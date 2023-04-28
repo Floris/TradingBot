@@ -2,7 +2,7 @@ from decimal import Decimal
 from time import sleep
 
 import pandas
-from config import MainConfig
+from config.config import MainConfig
 from interfaces import MarketDataProtocol
 from position_manager.position_manager import PositionManager
 from schemas import Signal

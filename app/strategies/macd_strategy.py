@@ -1,7 +1,7 @@
 from decimal import Decimal
 
 import pandas as pd
-from config import MainConfig
+from config.config import MainConfig
 from enums import OrderSide
 from schemas import Signal
 from ta.trend import MACD

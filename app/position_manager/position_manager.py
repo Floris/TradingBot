@@ -3,7 +3,7 @@ from decimal import Decimal
 from typing import TypedDict
 from uuid import uuid4
 
-from config import MainConfig
+from config.config import MainConfig
 from enums import OrderSide
 from position_manager.trade_executor import TradeExecutor
 from schemas import OrderSchema, Signal

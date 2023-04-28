@@ -1,5 +1,5 @@
 import pandas
-from config import MainConfig
+from config.config import MainConfig
 from interfaces import StrategyProtocol
 from schemas import Signal
 

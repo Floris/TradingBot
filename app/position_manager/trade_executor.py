@@ -1,7 +1,7 @@
 from decimal import Decimal
 from uuid import uuid4
 
-from config import MainConfig
+from config.config import MainConfig
 from enums import OrderSide, OrderType, TimeInForce
 from interfaces import CryptoExchangeProtocol
 from schemas import CreateOrderSchema, OrderSchema

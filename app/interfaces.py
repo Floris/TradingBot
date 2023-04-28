@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Protocol
 
 import pandas
-from config import MainConfig
+from config.config import MainConfig
 from enums import INTERVALS
 from schemas import CreateOrderSchema, OrderSchema, Signal
 
