@@ -1,8 +1,8 @@
-from schemas import CreateOrderSchema
+from schemas import CreateOrderSchema, OrderSchema
 
 
 class BinanceExchange:
-    def create_order(self, payload: CreateOrderSchema) -> dict:
+    def create_order(self, payload: CreateOrderSchema) -> OrderSchema:
         print("Creating order", payload.dict(exclude_none=True))
         return {}
 

@@ -2,14 +2,14 @@ from decimal import Decimal
 
 import pytest
 
-from app.config import MainConfig, MarketDataConfig, TradingConfig
+from app.config.config import MainConfig, MarketDataConfig, TradingConfig
 
 
 @pytest.fixture()
 def trading_bot_config() -> MainConfig:
     return MainConfig(
         symbol="BTCUSDT",
-        polling_interval=0.5,
+        polling_interval_weight=0.5,
         market_data_config=MarketDataConfig(interval="15m", limit=1000),
         trading_config=TradingConfig(
             starting_balance=Decimal("10000"),

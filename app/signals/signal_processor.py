@@ -1,19 +1,20 @@
+from decimal import Decimal
 from time import sleep
 
 import pandas
-from config import MainConfig
+from config.config import MainConfig
 from interfaces import MarketDataProtocol
 from position_manager.position_manager import PositionManager
 from schemas import Signal
 from signals.signal_engine import SignalEngine
-from utils.utils import timestamp_to_datetime
+from utils.utils import interval_to_seconds, timestamp_to_datetime
 
 
 class SignalProcessor:
     def __init__(
         self,
-        signal_engine: SignalEngine,
         config: MainConfig,
+        signal_engine: SignalEngine,
         market_data: MarketDataProtocol,
         position_manager: PositionManager,
     ) -> None:
@@ -21,15 +22,16 @@ class SignalProcessor:
         Constructor for the SignalProcessor class.
 
         Args:
-            signal_engine (SignalEngine): An instance of SignalEngine class.
             config (MainConfig): An instance of MainConfig class.
+            signal_engine (SignalEngine): An instance of SignalEngine class.
             market_data (MarketDataProtocol): An object implementing the MarketDataProtocol interface.
             position_manager (PositionManager): An object implementing the PositionManager
         """
-        self.signal_engine = signal_engine
         self.config = config
+        self.signal_engine = signal_engine
         self.market_data = market_data
         self.position_manager = position_manager
+        self.last_price: Decimal = Decimal(0)
 
     def _print_stats(self, df: pandas.DataFrame) -> None:
         """
@@ -72,13 +74,15 @@ class SignalProcessor:
             end_time=self.config.market_data_config.end_time,
         )
 
-    def run(self, backtest: bool | None = False) -> None:
+    def run(self) -> None:
         """
         Runs the SignalProcessor in either backtest or standard mode.
 
         Args:
             backtest (bool | None): A boolean indicating whether to run in backtest mode or not. Default is False.
                 If None, the function will not run in backtest mode and will run in standard mode.
+        Returns:
+            pandas.Series: A Series containing the last kline data.
 
         Backtest mode:
             With backtest mode enabled, the signal processor will loop through the klines returned by the market data.
@@ -90,16 +94,22 @@ class SignalProcessor:
         """
         self.signal_engine.initialize_strategies()
 
-        if backtest:
+        interval = self.config.polling_interval_weight * interval_to_seconds(
+            self.config.market_data_config.interval
+        )
+
+        if self.config.backtest:
             df = self._get_df()
             for index in range(1, len(df)):
                 df_slice = df.iloc[:index]
                 self._handle_signals(self.signal_engine.generate_signals(df_slice))
                 self._print_stats(df_slice)
+
+            self.last_price = Decimal(df["close"].iloc[-1])
             return
 
         while True:
             df = self._get_df()
             self._handle_signals(self.signal_engine.generate_signals(df))
             self._print_stats(df)
-            sleep(self.config.polling_interval)
+            sleep(interval)

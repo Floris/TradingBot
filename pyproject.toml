@@ -2,7 +2,7 @@
 name = "tradingbot"
 version = "0.1.0"
 description = ""
-authors = ["floris <florisdroppert@gmail.com>"]
+authors = ["floris <floris@droppert.dev>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]

@@ -1,5 +1,5 @@
 import pandas
-from config import MainConfig
+from config.config import MainConfig
 from interfaces import StrategyProtocol
 from schemas import Signal
 
@@ -7,18 +7,18 @@ from schemas import Signal
 class SignalEngine:
     def __init__(
         self,
-        strategies: list[StrategyProtocol],
         config: MainConfig,
+        strategies: list[StrategyProtocol],
     ) -> None:
         """
         Constructor for the SignalEngine class.
 
         Args:
-            strategies (list[StrategyProtocol]): A list of StrategyProtocol objects.
             config (MainConfig): An instance of MainConfig class.
+            strategies (list[StrategyProtocol]): A list of StrategyProtocol objects.
         """
-        self.strategies = strategies
         self.config = config
+        self.strategies = strategies
 
     def initialize_strategies(self) -> None:
         """Initializes the strategies."""
