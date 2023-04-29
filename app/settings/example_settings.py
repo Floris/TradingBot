@@ -1,3 +1,0 @@
-BINANCE_API_KEY = "EXAMPLE_API_KEY"
-BINANCE_SECRET = "EXAMPLE_SECRET"
-BINANCE_URI = "https://api.binance.com/api/v3"

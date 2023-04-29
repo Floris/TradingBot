@@ -162,3 +162,8 @@ cython_debug/
 # ------------------- #
 /app/settings/settings.py
 .vscode
+/app/strategies/*
+!app/strategies/__init__.py
+!app/strategies/base_strategy.py
+!app/strategies/example_rsi_strategy.py
+!app/strategies/example_macd_strategy.py

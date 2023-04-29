@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 
 import pandas
@@ -6,9 +7,10 @@ from enums import INTERVALS
 from ta.utils import dropna
 from utils.utils import datetime_to_timestamp
 
-from settings import settings
-
-client = spot.Spot(api_key=settings.BINANCE_API_KEY, api_secret=settings.BINANCE_SECRET)
+client = spot.Spot(
+    api_key=os.getenv("BINANCE_API_KEY", None),
+    api_secret=os.getenv("BINANCE_SECRET", None),
+)
 
 BINANCE_KLINE_COLUMNS = [
     "open_time",

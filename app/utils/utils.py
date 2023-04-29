@@ -1,6 +1,33 @@
+import importlib
+import os
 from datetime import datetime, timezone
+from typing import TypeVar
 
 from enums import INTERVALS
+from interfaces import StrategyProtocol
+
+T = TypeVar("T")
+
+
+def get_instance_from_mapping(mapping: dict[str, type[T]], env_var_name: str) -> T:
+    if env_value := os.getenv(env_var_name):
+        return mapping[env_value]()
+
+    raise ValueError(f"Environment variable {env_var_name} not set")
+
+
+def get_strategy_instances(env_var_name: str = "STRATEGIES") -> list[StrategyProtocol]:
+    env_var_value = os.getenv(env_var_name)
+    if not env_var_value:
+        raise ValueError(f"Environment variable {env_var_name} not set")
+
+    instances = []
+    for item in env_var_value.split(","):
+        module_name, class_name = item.strip().rsplit(".", 1)
+        module = importlib.import_module(module_name)
+        strategy_class = getattr(module, class_name)
+        instances.append(strategy_class())
+    return instances
 
 
 def timestamp_to_datetime(timestamp: int) -> str:

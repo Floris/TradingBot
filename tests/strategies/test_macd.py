@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from app.strategies.macd_strategy import MACDStrategy
+from app.strategies.example_macd_strategy import MACDStrategy
 from tests.sample_data import SAMPLE_DATA_NO_SIGNAL
 
 
