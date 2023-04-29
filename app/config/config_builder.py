@@ -13,7 +13,7 @@ def config_builder(
     notional: str = "100",
     max_amount_open_positions: int = 10,
     backtest: bool = True,
-    polling_interval_weight: float = 0.5,
+    polling_interval_weight: float = 1.0,
     start_date: str | None = None,
     end_date: str | None = None,
 ) -> MainConfig:

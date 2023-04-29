@@ -99,6 +99,8 @@ class PositionManager:
             self._handle_sell_signal(signal)
 
         print(f"Current balance: {self.balance}")
+        print(f"Current portfolio: {self.portfolio}")
+        print(f"Current positions: {self.positions}")
 
     def _handle_buy_signal(self, signal: Signal, notional: Decimal) -> None:
         """
@@ -174,7 +176,7 @@ class PositionManager:
             balance_plus_portfolio_value - self.config.trading_config.starting_balance
         )
 
-        print("PositionManager stats:")
+        print("POSITION MANAGER STATS:")
         print(f"Sum open positions Value: {round(final_portfolio_value,2)}")
         print(f"Open positions count: {self.open_positions}")
 
