@@ -27,10 +27,10 @@ def main() -> None:
     strategies = get_strategy_instances()
 
     crypto_exchange_instances = get_instance_from_mapping(
-        CRYPTO_EXCHANGE_MAPPING, "CRYPTO_EXCHANGES"
+        CRYPTO_EXCHANGE_MAPPING, "CRYPTO_EXCHANGE"
     )
     market_data_provider_instances = get_instance_from_mapping(
-        MARKET_DATA_PROVIDER_MAPPING, "MARKET_DATA_PROVIDER_MAPPING"
+        MARKET_DATA_PROVIDER_MAPPING, "MARKET_DATA_PROVIDER"
     )
 
     config = config_builder(
