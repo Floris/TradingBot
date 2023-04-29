@@ -33,6 +33,7 @@ class MockMarketData(MarketDataProtocol):
             pandas.DataFrame: A DataFrame containing klines data.
         """
         data = {
+            "close_time": [1209459200000, 1409459200000, 1509459201000, 1609459201000],
             "open_time": [1209459200000, 1409459200000, 1509459201000, 1609459201000],
             "open": [5324, 9000.12, 9100.00, 9600.12],
             "close": [7545, 9500, 9000, 10500],

@@ -31,7 +31,17 @@ class SignalProcessor:
         self.signal_engine = signal_engine
         self.market_data = market_data
         self.position_manager = position_manager
-        self.last_price: Decimal = Decimal(0)
+        self.df: pandas.DataFrame = pandas.DataFrame()
+
+    def _print_backtest_stats(self) -> None:
+        print("BACKTESTING RESULTS:")
+        print("Asset: ", self.config.symbol)
+        print("Length of the dataframe: ", len(self.df))
+        print("Timeframe: ", self.config.market_data_config.interval)
+        print("Last close price: ", round(Decimal(str(self.df["close"].iloc[-1])), 2))
+        print(
+            "Last close date: ", timestamp_to_datetime(self.df["close_time"].iloc[-1])
+        )
 
     def _print_stats(self, df: pandas.DataFrame) -> None:
         """
@@ -74,42 +84,46 @@ class SignalProcessor:
             end_time=self.config.market_data_config.end_time,
         )
 
-    def run(self) -> None:
+    def _run_backtest(self) -> None:
         """
-        Runs the SignalProcessor in either backtest or standard mode.
-
-        Args:
-            backtest (bool | None): A boolean indicating whether to run in backtest mode or not. Default is False.
-                If None, the function will not run in backtest mode and will run in standard mode.
-        Returns:
-            pandas.Series: A Series containing the last kline data.
-
         Backtest mode:
             With backtest mode enabled, the signal processor will loop through the klines returned by the market data.
             This way, we can test our strategies on historical data.
-
-        Standard mode:
-            With backtest mode disabled, the signal processor will loop indefinitely, polling the market data for new klines.
-            This way, we can test our strategies on live data.
         """
-        self.signal_engine.initialize_strategies()
+        self.df = self._get_df()
 
+        for index in range(1, len(self.df)):
+            df_slice = self.df.iloc[: index + 1]
+            self._handle_signals(self.signal_engine.generate_signals(df_slice))
+            self._print_stats(df_slice)
+
+        self._print_backtest_stats()
+
+    def _run_standard(self) -> None:
+        """
+        Standard mode:
+           With backtest mode disabled, the signal processor will loop indefinitely, polling the market data for new klines.
+           This way, we can test our strategies on live data.
+        """
         interval = self.config.polling_interval_weight * interval_to_seconds(
             self.config.market_data_config.interval
         )
 
-        if self.config.backtest:
-            df = self._get_df()
-            for index in range(1, len(df)):
-                df_slice = df.iloc[: index + 1]
-                self._handle_signals(self.signal_engine.generate_signals(df_slice))
-                self._print_stats(df_slice)
+        while True:
+            self.df = self._get_df()
+            self._handle_signals(self.signal_engine.generate_signals(self.df))
+            self._print_stats(self.df)
+            sleep(interval)
 
-            self.last_price = Decimal(float(df["close"].iloc[-1]))
+    def run(self) -> None:
+        """
+        Runs the SignalProcessor in either backtest or standard mode.
+        """
+
+        self.signal_engine.initialize_strategies()
+
+        if self.config.backtest:
+            self._run_backtest()
             return
 
-        while True:
-            df = self._get_df()
-            self._handle_signals(self.signal_engine.generate_signals(df))
-            self._print_stats(df)
-            sleep(interval)
+        self._run_standard()

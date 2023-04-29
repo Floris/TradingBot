@@ -33,6 +33,18 @@ class TradeExecutor:
         print("TradeExecutor stats:")
         print(f"Total orders: {len(self.orders)}")
 
+        sell_orders = 0
+        buy_orders = 0
+
+        for order in self.orders.values():
+            if order.side == OrderSide.SELL:
+                sell_orders += 1
+            else:
+                buy_orders += 1
+
+        print(f"Total sell orders: {sell_orders}")
+        print(f"Total buy orders: {buy_orders}")
+
     def submit_order(
         self,
         symbol: str,
