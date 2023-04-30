@@ -4,40 +4,21 @@ import pandas as pd
 from config.config import MainConfig
 from enums import OrderSide
 from schemas import Signal
+from strategies.base_strategy import BaseStrategy
 from ta.trend import MACD
 
 
-class MACDStrategy:
+class MACDStrategy(BaseStrategy):
     def initialize(self, config: MainConfig) -> None:
         """
         Initialize the MACD Strategy with the given configuration.
         """
-
-        self.config = config
+        super().initialize(config)
         self.name = "MACD Strategy"
 
         self.n_fast: int = 12
         self.n_slow: int = 26
         self.n_sign: int = 9
-
-    def _create_signal(
-        self, action: OrderSide, reason: str, current_price: Decimal
-    ) -> Signal:
-        """
-        Create a signal object for the given action and current price.
-
-        :param action: The order side (OrderSide.BUY or OrderSide.SELL)
-        :param current_price: The current price of the asset
-        :return: A Signal object
-        """
-
-        return Signal(
-            name=self.name,
-            reason=reason,
-            action=action,
-            symbol=self.config.symbol,
-            price=round(current_price, 2),
-        )
 
     def analyze(self, df: pd.DataFrame) -> Signal | None:
         """

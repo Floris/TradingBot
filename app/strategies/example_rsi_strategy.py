@@ -4,10 +4,11 @@ import pandas
 from config.config import MainConfig
 from enums import OrderSide
 from schemas import Signal
+from strategies.base_strategy import BaseStrategy
 from ta.momentum import rsi
 
 
-class SimpleRsiStrategy:
+class SimpleRsiStrategy(BaseStrategy):
     def initialize(
         self,
         config: MainConfig,
@@ -15,44 +16,12 @@ class SimpleRsiStrategy:
         """
         Initialize the Simple RSI Strategy with the given configuration.
         """
-        self.config = config
+        super().initialize(config)
         self.name = "Simple RSI Strategy"
 
         self.overbought: int = 70
         self.oversold: int = 30
         self.window: int = 14
-
-    def _create_signal(
-        self,
-        action: OrderSide,
-        reason: str,
-        current_price: Decimal,
-        stop_price: Decimal | None = None,
-        take_profit_price: Decimal | None = None,
-    ) -> Signal:
-        """
-        Create a signal object for the given action and current price.
-
-        :param action: The order side (OrderSide.BUY or OrderSide.SELL)
-        :param current_price: The current price of the asset
-        :return: A Signal object
-        """
-
-        if stop_price:
-            stop_price = round(stop_price, 2)
-
-        if take_profit_price:
-            take_profit_price = round(take_profit_price, 2)
-
-        return Signal(
-            name=self.name,
-            reason=reason,
-            action=action,
-            symbol=self.config.symbol,
-            price=round(current_price, 2),
-            stop_price=stop_price,
-            take_profit_price=take_profit_price,
-        )
 
     def analyze(self, df: pandas.DataFrame) -> Signal | None:
         """
@@ -76,12 +45,6 @@ class SimpleRsiStrategy:
                 action=OrderSide.BUY,
                 reason="RSI value is below the oversold threshold",
                 current_price=current_price,
-                stop_price=Decimal(
-                    current_price * self.config.trading_config.stop_loss_percentage
-                ),
-                take_profit_price=Decimal(
-                    current_price * self.config.trading_config.take_profit_percentage
-                ),
             )
 
         elif current_rsi > self.overbought:
