@@ -1,4 +1,4 @@
-# TradingBot
+# TradingBot (WIP)
 
 This trading bot is a versatile and powerful tool that can help users automate their trading strategies, perform backtesting, and generate trading signals for various use cases, such as receiving notifications on platforms like Telegram. The bot's architecture is designed to manage trading signals, execute strategies, manage positions, and interact with crypto exchanges to execute trades. The core components of the trading bot are as follows:
 
